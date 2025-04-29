@@ -1,3 +1,12 @@
+## Admin info
+email-> admin@example.com
+password-> admin123
+
+## User info
+email-> sarthak@gmail.com
+password-> Abcd@1234
+
+
 # Form Builder App
 
 ## Overview
