@@ -1,0 +1,33 @@
+{
+  "name": "form-builder-app",
+  "version": "1.0.0",
+  "description": "A web application for creating and filling forms with admin and user functionalities.",
+  "main": "config/db.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "body-parser": "^1.19.0",
+    "cookie-parser": "^1.4.5",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.21.2",
+    "express-session": "^1.17.1",
+    "mongoose": "^5.13.23"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"
+  },
+  "keywords": [
+    "form",
+    "builder",
+    "admin",
+    "user",
+    "mongodb",
+    "express"
+  ],
+  "author": "Your Name",
+  "license": "ISC"
+}

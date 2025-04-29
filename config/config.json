@@ -1,0 +1,9 @@
+{
+    "port": 5050,
+    "host": "localhost",
+    "username": "Admin",
+    "userpassword": "JGokxCnVi560ZzkG",
+    "userstring": "qob8mle",
+    "clustername": "valtech",
+    "dbname": "valtechDB"
+}

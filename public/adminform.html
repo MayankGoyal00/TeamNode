@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Forms</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body {
+      background-image: linear-gradient(89.4deg, rgba(194, 0, 39, 1) 0.8%, rgba(10, 35, 104, 1) 99.4%);
+      min-height: 100vh;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 40px;
+      box-shadow: 0 0px 5px rgba(255, 255, 255, 0.3);
+    }
+
+    .avatar {
+      width: 50px;
+      height: 50px;
+      background-color: #ffffff;
+      color: #333;
+      font-size: 22px;
+      font-weight: bold;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-transform: uppercase;
+      box-shadow: 0 2px 8px rgba(255, 255, 255, 0.4);
+    }
+
+    .logout-btn {
+      background-color: #cd0000;
+      color: white;
+      padding: 10px 20px;
+      font-size: 18px;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .logout-btn:hover {
+        background-color: #cd0000;
+    }
+
+    .main-box {
+      flex: 1;
+      padding: 30px;
+      max-width: 1000px;
+      width: 100%;
+      margin: auto;
+      margin-top: -30px ;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 70px;
+      font-size: 50px;
+      font-weight: bold;    
+      color: #fff;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .form-card {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 34px;
+      margin-bottom: 40px;
+      box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 20px;
+      font-weight: bold;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .form-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(255, 255, 255, 0.5);
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .delete-btn {
+      background-color: #c62222;
+      color: white;
+      padding: 10px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+      
+    }
+
+    .delete-btn:hover {
+      background-color: #d32f2f;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="avatar" id="userAvatar"><a href="home.html">A</a></div>
+  
+  </div>
+
+  <div class="main-box">
+    <h2>Admin Forms</h2>
+    <div id="formList"></div>
+  </div>
+
+  <script>
+    async function loadForms() {
+      try {
+        const response = await fetch("/viewForms"); 
+        const forms = await response.json();
+
+        const formList = document.getElementById("formList");
+        formList.innerHTML = "";
+
+        if (forms.length === 0) {
+          formList.innerHTML = "<p style='color:white;'>No forms available yet.</p>";
+          return;
+        }
+
+        forms.forEach((form, index) => {
+          const div = document.createElement("div");
+          div.className = "form-card";
+          div.innerHTML = `
+            <span>Form ${index + 1}: ${form.formName}</span>
+            <div>
+              <button class="delete-btn" onclick="deleteForm('${form._id}')">Delete</button>
+            </div>
+          `;
+          formList.appendChild(div);
+        });
+      } catch (error) {
+        console.error("Error loading forms:", error);
+        document.getElementById("formList").innerHTML = "<p style='color:white;'>Failed to load forms. Please try again.</p>";
+      }
+    }
+
+    async function deleteForm(formId) {
+      const confirmDelete = confirm("Are you sure you want to delete this form?");
+      if (!confirmDelete) return;
+
+      try {
+        const response = await fetch(`/deleteForm/${formId}`, { method: "DELETE" });
+        if (response.ok) {
+          alert("Form deleted successfully.");
+          loadForms(); 
+        } else {
+          alert("Failed to delete the form. Please try again.");
+        }
+      } catch (error) {
+        console.error("Error deleting form:", error);
+        alert("An error occurred while deleting the form.");
+      }
+    }
+
+    function logoutUser() {
+      localStorage.clear();
+      window.location.href = "/login.html";
+    }
+
+    
+    loadForms();
+  </script>
+</body>
+</html>

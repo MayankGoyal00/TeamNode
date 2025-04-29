@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Form Preview</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f4f9;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      color: #4CAF50;
+      margin-bottom: 10px;
+    }
+
+    .form-container {
+      width: 100%;
+      max-width: 700px;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    label {
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    input, select {
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <h1>Form Preview</h1>
+  <div id="formPreview" class="form-container"></div>
+
+  <script>
+  
+    function getUrlParams() {
+      const params = new URLSearchParams(window.location.search);
+      const formDataEncoded = params.get('formData');
+      if (formDataEncoded) {
+        try {
+          
+          return JSON.parse(decodeURIComponent(formDataEncoded));
+        } catch (e) {
+          console.error('Error parsing form data:', e);
+          return null;
+        }
+      }
+      return null;
+    }
+
+  
+    function buildForm(formData) {
+      if (!formData || !formData.fields || formData.fields.length === 0) {
+        console.error('Form data is invalid or missing fields');
+        return;
+      }
+
+      const formContainer = document.getElementById('formPreview');
+      const form = document.createElement('form');
+
+      formData.fields.forEach(field => {
+        const label = document.createElement('label');
+        label.textContent = field.question;
+
+        const input = document.createElement('input');
+        input.type = field.fieldType;
+        input.name = field.questionId;
+
+      
+        field.validations.forEach(validation => {
+          for (let key in validation) {
+            if (key === "required") {
+              input.required = validation[key] === "true";
+            } else if (key === "maxlength") {
+              input.maxLength = validation[key];
+            } else if (key === "minlength") {
+              input.minLength = validation[key];
+            }
+          }
+        });
+
+        form.appendChild(label);
+        form.appendChild(input);
+        form.appendChild(document.createElement('br'));
+      });
+
+      const submitButton = document.createElement('button');
+      submitButton.textContent = "Submit";
+      form.appendChild(submitButton);
+
+      formContainer.appendChild(form);
+    }
+
+  
+    window.onload = () => {
+      const formData = getUrlParams();
+      if (formData) {
+        buildForm(formData);
+      } else {
+        document.getElementById('formPreview').innerHTML = 'Invalid form data.';
+      }
+    };
+  </script>
+</body>
+</html>

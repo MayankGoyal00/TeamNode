@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Dashboard</title>
+  <style>
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-image: linear-gradient(89.4deg, rgba(194, 0, 39, 1) 0.8%, rgba(10, 35, 104, 1) 99.4%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 40px;
+      box-shadow: 0 0px 5px rgba(255, 255, 255, 0.3);
+    }
+
+    .avatar {
+      width: 50px;
+      height: 50px;
+      background-color: #ffffff;
+      color: #333;
+      font-size: 22px;
+      font-weight: bold;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-transform: uppercase;
+      box-shadow: 0 2px 8px rgba(255, 255, 255, 0.4);
+    }
+
+    .dashboard-heading {
+      text-align: center;
+      font-size: 40px;
+      margin-bottom: 40px;
+      color: white;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.1);
+      width: 95%;
+      max-width: 1200px;
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 10px 8px 15px rgba(255, 255, 255, 0.3);
+      transition: transform 0.8s ease, box-shadow 0.8s ease;
+      margin: 20px auto;
+      flex: 1;
+    }
+
+    .container:hover {
+      box-shadow: 0 8px 25px rgba(255, 255, 255, 0.5), 0 0 30px rgb(250, 243, 244);
+      cursor: pointer;
+    }
+
+    .header h1 {
+      font-size: 32px;
+      color: white;
+      text-align: center;
+      margin: 0;
+      font-weight: bold;
+    }
+
+    .forms-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 10px;
+    }
+
+    .forms-table th,
+    .forms-table td {
+      text-align: center;
+      padding: 15px 20px;
+      color: white;
+      cursor: pointer;
+      transition: 0.3s ease;
+      border-bottom: 1px solid #eee;
+    }
+
+    .forms-table th:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .forms-table tr:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+      width: 80%;
+      max-width: 600px;
+    }
+
+    .modal-header {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .modal-body {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .modal-close {
+      background: red;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .modal-close:hover {
+      background: darkred;
+    }
+
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+    }
+
+    .view-details {
+      padding: 10px 20px;
+      background: blue;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s ease;
+    }
+
+    .view-details:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="header">
+    <a href="home.html" class="avatar" id="userAvatar">A</a>
+  </div>
+
+  <div class="container">
+    <h1 class="dashboard-heading">Submitted Forms</h1>
+
+    <main class="main-content">
+      <table class="forms-table">
+        <thead>
+          <tr>
+            <th>FORM ID</th>
+            <th>FORM NAME</th>
+            <th>FORM CATEGORY</th>
+            <th>USER NAME</th> 
+            <th>ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody id="formsList">
+        </tbody>
+      </table>
+    </main>
+  </div>
+
+  
+  <div class="overlay" id="overlay"></div>
+  <div class="modal" id="formModal">
+    <div class="modal-header">Form Details</div>
+    <div class="modal-body" id="modalBody"></div>
+    <button class="modal-close" id="closeModal">Close</button>
+  </div>
+
+  <script>
+    const modal = document.getElementById('formModal');
+const overlay = document.getElementById('overlay');
+const modalBody = document.getElementById('modalBody');
+const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+const loggedInUserId = loggedInUser?.userId || loggedInUser?._id; 
+
+async function loadForms() {
+  const formsList = document.getElementById('formsList');
+
+  try {
+    console.log("Fetching forms...");
+    const response = await fetch('/getAllResponses');
+    const forms = await response.json();
+    console.log("Forms data:", forms);
+
+    if (forms.length === 0) {
+      formsList.innerHTML = `<tr><td colspan="4">No form responses found.</td></tr>`;
+      return;
+    }
+
+    forms.forEach(form => {
+  const row = document.createElement('tr');
+  row.innerHTML = `
+    <td>${form.formId?.$oid || form.formId}</td>
+    <td>${form.formName || "Untitled Form"}</td>
+    <td>${form.formType || "Unknown"}</td>
+    <td>${form.userName || "Unknown"}</td>  
+    <td><button class="view-details" data-id="${form._id?.$oid || form._id}">View Details</button></td>
+  `;
+  formsList.appendChild(row);
+});
+
+
+
+
+    document.querySelectorAll('.view-details').forEach(button => {
+  button.addEventListener('click', (e) => {
+    const submissionId = e.target.getAttribute('data-id');
+    console.log("Button clicked for submission ID:", submissionId);
+
+    const submission = forms.find(f => (f._id?.$oid || f._id) === submissionId);
+
+    if (!submission) {
+      console.error(`No submission found for ID: ${submissionId}`);
+      alert("No details available.");
+      return;
+    }
+
+    modalBody.innerHTML = `
+      <h3>${submission.formName || "Untitled Form"}</h3>
+      <ul>
+        ${submission.responses.map(r => `
+          <li><strong>${r.question}:</strong> ${r.answer}</li>
+        `).join('')}
+      </ul>
+    `;
+    modal.style.display = 'block';
+    overlay.style.display = 'block';
+  });
+});
+
+
+  } catch (error) {
+    console.error("Failed to load forms:", error);
+    formsList.innerHTML = `<tr><td colspan="4">Failed to load forms.</td></tr>`;
+  }
+}
+
+
+document.getElementById('closeModal').addEventListener('click', () => {
+  modal.style.display = 'none';
+  overlay.style.display = 'none';
+});
+
+
+function loadUsername() {
+  if (loggedInUser && loggedInUser.username) {
+    document.getElementById("userAvatar").textContent = loggedInUser.username.charAt(0).toUpperCase();
+  } else {
+    document.getElementById("userAvatar").textContent = "A";
+  }
+}
+
+
+loadUsername();
+loadForms();
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dynamic Form Creator</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-image: linear-gradient(89.4deg, rgba(194, 0, 39, 1) 0.8%, rgba(10, 35, 104, 1) 99.4%);
+      color: #fff;
+      padding: 40px 20px;
+      min-height: 100vh;
+    }
+
+    h1 {
+      text-align: center;
+      color: #ffffff;
+      margin-bottom: 30px;
+      font-size: 36px;
+      text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+    }
+
+    #formInfo {
+      max-width: 500px;
+      margin: 0 auto 20px;
+      background: rgba(255, 255, 255, 0.15);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
+      margin-bottom: 40px;
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 10px;
+      align-items: center;
+    }
+
+    #formInfo p {
+      margin: 10px 0;
+      font-size: 18px;
+      color: #f8f8f8;
+    }
+
+    #formInfo hr {
+      grid-column: span 2;
+      border: 0;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.3);
+      margin: 20px 0;
+    }
+
+    .question-block {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      padding: 30px;
+      margin-bottom: 40px;
+      box-shadow: 0 4px 10px rgba(255, 255, 255, 0.15);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .question-block:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(255, 255, 255, 0.3);
+    }
+
+    label {
+      display: block;
+      margin: 12px 0 6px;
+      margin-bottom: 20px;
+      font-weight: bold;
+      color: #ffffff;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      font-size: 16px;
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    input::placeholder {
+      color: #ddd;
+    }
+
+    input:focus,
+    select:focus {
+      outline: none;
+      border-color: #66b2ff;
+      box-shadow: 0 0 8px rgba(102, 178, 255, 0.5);
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .attributes-container {
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .attributes-container h3 {
+      margin-bottom: 10px;
+      font-size: 18px;
+      color: #f8f8f8;
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    .attributes-container input,
+    .attributes-container select {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      font-size: 16px;
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .attributes-container input::placeholder {
+      color: #ddd;
+    }
+
+    .attributes-container input:focus,
+    .attributes-container select:focus {
+      outline: none;
+      border-color: #66b2ff;
+      box-shadow: 0 0 8px rgba(102, 178, 255, 0.5);
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    button {
+  display: inline-block;
+  margin: 20px auto 0; 
+  padding: 12px 20px;
+  background-color: blue;
+  border: none;
+  color: white;
+  font-size: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  text-align: center;
+  width: auto; 
+    }
+
+button:hover {
+  background-color: blue;
+  transform: translateY(-2px);
+}
+
+  </style>
+</head>
+<body>
+  <h1>Create Your Form</h1>
+  <div id="formInfo"></div>
+  <div id="questionsContainer"></div>
+  <button onclick="submitForm()">Generate Form</button>
+
+  <script>
+    let formName = "";
+    let formType = "";
+    let fieldCount = 0;
+
+    function getParams() {
+      const params = new URLSearchParams(window.location.search);
+      formName = decodeURIComponent(params.get("formName") || "");
+      formType = params.get("formType") || "";
+      fieldCount = parseInt(params.get("fieldCount") || "0");
+    }
+
+    function renderQuestionBlocks() {
+      const container = document.getElementById("questionsContainer");
+
+      for (let i = 0; i < fieldCount; i++) {
+        const block = document.createElement("div");
+        block.className = "question-block";
+
+        block.innerHTML = `
+          <label>Question ${i + 1}</label>
+          <input type="text" class="question" placeholder="Enter question text" />
+
+          <label>Field Type:</label>
+          <select class="fieldType" onchange="updateAttributes(this)">
+            <option disabled selected>Select type</option>
+            <option value="text">Text</option>
+            <option value="number">Number</option>
+            <option value="email">Email</option>
+            <option value="radio">Radio</option>
+            <option value="checkbox">Checkbox</option>
+            <option value="select">Select</option>
+            <option value="tel">Telephone No</option>
+          </select>
+
+          <div class="attributes-container">
+            <h3>Validations</h3>
+          </div>
+        `;
+
+        container.appendChild(block);
+      }
+    }
+
+    function updateAttributes(selectEl) {
+      const type = selectEl.value;
+      const container = selectEl.nextElementSibling;
+      container.innerHTML = "<h3>Validations</h3>";
+
+      const attrs = ["id", "required"];
+      if (["radio", "checkbox", "select"].includes(type)) attrs.push("options");
+      if (["number"].includes(type)) attrs.push("min", "max");
+      if (["text"].includes(type)) attrs.push("placeholder", "maxlength");
+
+      attrs.forEach(attr => {
+        const label = document.createElement("label");
+        label.textContent = `${attr}:`;
+        const input = document.createElement(attr === "required" ? "select" : "input");
+
+        if (attr === "required") {
+          ["true", "false"].forEach(val => {
+            const option = document.createElement("option");
+            option.value = val;
+            option.textContent = val;
+            input.appendChild(option);
+          });
+        } else {
+          input.placeholder = attr;
+        }
+
+        input.setAttribute("data-attr", attr);
+        input.className = "validation-field"; 
+        container.appendChild(label);
+        container.appendChild(input);
+      });
+    }
+
+    function submitForm() {
+      const blocks = document.querySelectorAll(".question-block");
+      const fields = [];
+
+      blocks.forEach((block, index) => {
+        const question = block.querySelector(".question").value.trim();
+        const fieldType = block.querySelector(".fieldType").value;
+        const attrInputs = block.querySelectorAll(".attributes-container input, .attributes-container select");
+
+        const validations = [];
+        let questionId = `Q${index + 1}`;
+
+        attrInputs.forEach(input => {
+          const key = input.getAttribute("data-attr");
+          const value = input.value;
+          if (key && value) validations.push({ [key]: value });
+        });
+
+        fields.push({
+          questionId,
+          question,
+          fieldType,
+          validations
+        });
+      });
+
+      const finalData = {
+        formName,
+        formType,
+        fields
+      };
+
+      fetch("/generateForm", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(finalData)
+      })
+      .then(res => {
+        if (res.ok) {
+          
+          window.location.href = "/thankyouAdmin.html";
+        } else {
+          alert("Failed to generate the form. Please try again.");
+        }
+      })
+      .catch(err => {
+        console.error("Error:", err);
+        alert("An error occurred while generating the form.");
+      });
+  }
+
+   
+    getParams();
+    renderQuestionBlocks();
+
+
+    document.getElementById("formInfo").innerHTML = `
+      <p><strong>Form Name:</strong></p><p>${formName}</p>
+      <p><strong>Form Type:</strong></p><p>${formType}</p>
+      <p><strong>Fields:</strong></p><p>${fieldCount}</p>
+      <hr>
+    `;
+  </script>
+</body>
+</html>
+ 
+
+
+
+
+
+
+
+

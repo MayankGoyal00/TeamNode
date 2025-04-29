@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home page</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body {
+      background-image: linear-gradient(89.4deg, rgba(194, 0, 39, 1) 0.8%, rgba(10, 35, 104, 1) 99.4%);
+      min-height: 100vh;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 40px;
+      box-shadow: 0 0px 5px rgba(255, 255, 255, 0.3);
+    }
+
+    .avatar {
+      width: 50px;
+      height: 50px;
+      background-color: #ffffff;
+      color: #333;
+      font-size: 22px;
+      font-weight: bold;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-transform: uppercase;
+      box-shadow: 0 2px 8px rgba(255, 255, 255, 0.4);
+    }
+
+    .logout-btn {
+      background-color: #cd0000;
+      color: white;
+      padding: 10px 20px;
+      font-size: 18px;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .logout-btn:hover {
+      background-color: #d32f2f;
+    }
+
+
+    #toast {
+      visibility: hidden;
+      min-width: 250px;
+      background-color: #4CAF50;
+      color: white;
+      text-align: center;
+      border-radius: 8px;
+      padding: 16px;
+      position: fixed;
+      z-index: 1;
+      right: 30px;
+      top: 20px;
+      font-size: 17px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    #toast.show {
+      visibility: visible;
+      animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    }
+
+    @keyframes fadein {
+      from {top: 0; opacity: 0;}
+      to {top: 20px; opacity: 1;}
+    }
+
+    @keyframes fadeout {
+      from {top: 20px; opacity: 1;}
+      to {top: 0; opacity: 0;}
+    }
+
+
+    .main {
+      margin-top: 5%;
+      display: flex;
+      justify-content: space-evenly;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .cards {
+      border-color: #f6f4f4;
+      border-style: solid;
+      border-radius: 15px;
+      margin-top: 10px;
+      width: 30%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      height: 450px;
+      box-shadow: 10px 8px 15px rgba(255, 255, 255, 0.3);
+      transition: transform 0.8s ease, box-shadow 0.8s ease;
+    }
+
+    h2{
+        color: #fff;
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 56px;
+        font-weight: bold;
+        margin-top: -30px;
+        text-shadow: 2px 2px 5px rgb(248, 248, 248);
+    }
+
+    .cards:hover {
+      cursor: pointer;
+      box-shadow: 0 8px 25px rgba(255, 255, 255, 0.5), 0 0 30px rgb(250, 243, 244);
+    }
+
+    .image i {
+      font-size: 250px;
+      color: #f9f9f9;
+      transition: transform 0.3s ease-in-out;
+    }
+
+    .cards:hover .image i {
+      transform: scale(1.1);
+    }
+
+    .type {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    button {
+      color: rgb(251, 241, 241);
+      border: none;
+      padding: 12px 25px;
+      border-radius: 10px;
+      font-size: 18px;
+      background-color: blue;
+      color: #fff;
+      transition: all 0.4s ease;
+      display: inline-block;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    button:hover {
+      box-shadow: 0 0 15px rgba(250, 250, 249, 0.8), 0 0 30px rgb(248, 232, 235), 0 0 35px rgba(10,35,104,1);
+    }
+
+    h1 {
+      font-size: 20px;
+      font-weight: normal;
+      color: rgb(250, 243, 243);
+    }
+  </style>
+</head>
+<body>
+
+
+<div id="toast">Welcome back!</div>
+
+
+<div class="header">
+  <div class="avatar" id="userAvatar">A</div>
+  <button class="logout-btn" onclick="logoutUser()">Logout</button>
+</div>
+
+<div class="main">
+    <div style="width: 100%; text-align: center; margin-bottom: 50px;">
+        <h2>
+          Welcome to Admin Dashboard
+        </h2>
+      </div>
+    
+  <div class="cards">
+    <div class="image">
+      <i class="bi bi-person-gear"></i>
+    </div>
+    <div class="type">
+      <a href="dashboard.html">
+        <button><h1>Form Response</h1></button>
+      </a>
+    </div>
+  </div>
+
+  <div class="cards">
+    <div class="image">
+      <i class="bi bi-pencil-square"></i>
+    </div>
+    <div class="type">
+      <a href="formStructure.html">
+        <button><h1>Create Form</h1></button>
+      </a>
+    </div>
+  </div>
+
+  <div class="cards">
+    <div class="image">
+      <i class="bi bi-list-check"></i>
+    </div>
+    <div class="type">
+      <a href="adminform.html">
+        <button><h1>View Forms</h1></button>
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+  function logoutUser() {
+    localStorage.clear();
+    window.location.href = "/login.html";
+  }
+
+
+  const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+  if (loggedInUser && loggedInUser.username) {
+    showToast(`Welcome back, ${loggedInUser.username}!`);
+    document.getElementById("userAvatar").innerText = loggedInUser.username.charAt(0).toUpperCase();
+  } else {
+    window.location.href = "login.html";
+  }
+
+  function showToast(message) {
+    const toast = document.getElementById("toast");
+    toast.innerText = message;
+    toast.className = "show";
+    setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Fill Selected Form</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+  
+    body {
+      margin: 0;
+      padding: 60px 40px 40px 40px;
+      background-image: linear-gradient(89.4deg, rgba(194,0,39,1) 0.8%, rgba(10,35,104,1) 99.4%);
+      color: #ffffff;
+    }
+  
+    .top-bar {
+      position: absolute;
+      top: 50px;
+      left: 30px;
+    }
+  
+    .btn-back {
+      background-color: #c90000;
+      color: white;
+      padding: 10px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: 0.3s;
+    }
+  
+    .btn-back:hover {
+      background-color: #d32f2f;
+    }
+  
+    .main-box {
+      max-width:900px;
+      margin: auto;
+      margin-top: 40px;
+    }
+  
+    h2 {
+      text-align: center;
+      margin-bottom: 40px;
+      font-size: 36px;
+      color: #ffffff;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+  
+    form {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+  
+    form:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(255, 255, 255, 0.5);
+    }
+  
+    label {
+      font-size: 20px;
+      font-weight: bold;
+      display: block;
+      margin-bottom: 20px;
+      margin-top: 20px;
+    }
+  
+    input, select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      font-size: 16px;
+      background-color: rgba(255, 255, 255, 0.2);
+      color: #fff;
+    }
+  
+    input:focus, select:focus {
+      border-color: #b5bab58e;
+      outline: none;
+    }
+  
+    input[type="radio"],
+    input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      margin-right: 10px;
+      margin-top: 10px;
+      vertical-align: middle;
+      accent-color: #007bff; 
+    }
+  
+    .radio-checkbox-wrapper {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+  
+    .radio-checkbox-wrapper label {
+      margin: 0;
+      margin-left: 8px;
+      font-size: 16px;
+      color: #fff;
+    }
+  
+    .error {
+      color: #ff4d4d;
+      font-size: 14px;
+      margin-top: 5px;
+      margin-bottom: 10px;
+    }
+  
+    .btn-submit {
+      width: 100%;
+      padding: 14px;
+      font-size: 18px;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 20px;
+      background-color: #0003c9;
+      color: white;
+      transition: 0.3s;
+    }
+  
+    .btn-submit:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a href="/userForms.html" class="btn-back" onclick="disableToast()">⬅ Back to Forms</a>
+</div>
+
+<div class="main-box">
+  <h2 id="formTitle">Loading Form...</h2>
+
+  <form id="dynamicForm"></form>
+</div>
+
+<script>
+  async function loadForm() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const formId = urlParams.get('formId');
+
+    if (!formId) {
+      document.getElementById("formTitle").innerText = "No Form Selected.";
+      return;
+    }
+
+    try {
+      const response = await fetch(`/fillForm/${formId}`);
+      const formData = await response.json();
+
+      document.getElementById("formTitle").innerText = formData.formName;
+
+      const formContainer = document.getElementById("dynamicForm");
+      formContainer.innerHTML = "";
+
+      formData.fields.forEach(field => {
+        const label = document.createElement("label");
+        label.textContent = field.question;
+
+        let input;
+
+        if (field.fieldType === "select") {
+          input = document.createElement("select");
+          const optionsValidation = field.validations.find(v => v.options);
+          if (optionsValidation) {
+            const options = optionsValidation.options.split(",");
+            options.forEach(opt => {
+              const option = document.createElement("option");
+              option.value = opt.trim();
+              option.text = opt.trim();
+              input.appendChild(option);
+            });
+          }
+          input.name = field.questionId;
+          input.id = field.questionId;
+        } else if (field.fieldType === "radio" || field.fieldType === "checkbox") {
+          input = document.createElement("div");
+          input.id = field.questionId; 
+          const optionsValidation = field.validations.find(v => v.options);
+          if (optionsValidation) {
+            const options = optionsValidation.options.split(",");
+            options.forEach(opt => {
+              const wrapper = document.createElement("div");
+              wrapper.className = "radio-checkbox-wrapper";
+
+              const optionInput = document.createElement("input");
+              optionInput.type = field.fieldType;
+              optionInput.name = field.fieldType === "checkbox" ? `${field.questionId}[]` : field.questionId;
+              optionInput.value = opt.trim();
+              optionInput.id = `${field.questionId}-${opt.trim()}`;
+
+              const optionLabel = document.createElement("label");
+              optionLabel.htmlFor = `${field.questionId}-${opt.trim()}`;
+              optionLabel.textContent = opt.trim();
+
+              wrapper.appendChild(optionInput);
+              wrapper.appendChild(optionLabel);
+              input.appendChild(wrapper);
+            });
+          }
+        } else {
+          input = document.createElement("input");
+          input.type = field.fieldType || "text";
+          input.name = field.questionId;
+          input.id = field.questionId;
+        }
+
+        const errorDiv = document.createElement("div");
+        errorDiv.id = `error-${field.questionId}`;
+        errorDiv.className = "error";
+
+       
+        field.validations.forEach(v => {
+          const key = Object.keys(v)[0];
+          const value = v[key];
+
+          if (key === "required" && value === "true") {
+            if (input.tagName === "INPUT" || input.tagName === "SELECT") {
+              input.required = true;
+            }
+          }
+          if (key === "maxlength") {
+            input.maxLength = parseInt(value);
+          }
+          if (key === "min") {
+            input.min = parseInt(value);
+          }
+          if (key === "max") {
+            input.max = parseInt(value);
+          }
+          if (key === "placeholder") {
+            input.placeholder = value;
+          }
+        });
+
+        input.addEventListener("input", () => validateField(field));
+
+        formContainer.appendChild(label);
+        formContainer.appendChild(input);
+        formContainer.appendChild(errorDiv);
+      });
+
+      const submitButton = document.createElement("button");
+      submitButton.type = "submit";
+      submitButton.className = "btn-submit";
+      submitButton.textContent = "Submit Form";
+      formContainer.appendChild(submitButton);
+
+      formContainer.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        let isFormValid = true;
+
+        for (let field of formData.fields) {
+          if (!validateField(field)) {
+            isFormValid = false;
+          }
+        }
+
+        if (!isFormValid) {
+          alert("Please fix the errors before submitting.");
+          return;
+        }
+
+        const formDataObj = {};
+
+        formData.fields.forEach(field => {
+          if (field.fieldType === "checkbox") {
+            const checkboxes = document.querySelectorAll(`input[name="${field.questionId}[]"]:checked`);
+            formDataObj[field.questionId] = Array.from(checkboxes).map(cb => cb.value);
+          } else if (field.fieldType === "radio") {
+            const selected = document.querySelector(`input[name="${field.questionId}"]:checked`);
+            formDataObj[field.questionId] = selected ? selected.value : "";
+          } else {
+            const input = document.getElementById(field.questionId);
+            formDataObj[field.questionId] = input.value;
+          }
+        });
+
+        const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+  if (loggedInUser && loggedInUser.userId) {
+    formDataObj.userId = loggedInUser.userId;
+  }
+
+        try {
+          const submitResponse = await fetch(`/submitForm/${formId}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(formDataObj)
+          });
+
+          if (!submitResponse.ok) {
+            throw new Error(`Server responded with ${submitResponse.status}`);
+          }
+
+          const result = await submitResponse.text();
+          document.body.innerHTML = result;
+
+        } catch (error) {
+          console.error('Form submission failed:', error);
+          alert("Error submitting form. Please try again.");
+        }
+      });
+
+    } catch (err) {
+      document.getElementById("formTitle").innerText = "Error loading form.";
+    }
+  }
+
+  function validateField(field) {
+    const errorDiv = document.getElementById(`error-${field.questionId}`);
+    errorDiv.innerText = "";
+
+    let valid = true;
+
+    if (field.fieldType === "checkbox") {
+      const checkboxes = document.querySelectorAll(`input[name="${field.questionId}[]"]`);
+      const isRequired = field.validations.some(v => v.required === "true");
+      if (isRequired) {
+        const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
+        if (!anyChecked) {
+          errorDiv.innerText = "Please select at least one option.";
+          valid = false;
+        }
+      }
+    } else if (field.fieldType === "radio") {
+      const radios = document.querySelectorAll(`input[name="${field.questionId}"]`);
+      const isRequired = field.validations.some(v => v.required === "true");
+      if (isRequired) {
+        const selected = Array.from(radios).some(radio => radio.checked);
+        if (!selected) {
+          errorDiv.innerText = "Please select an option.";
+          valid = false;
+        }
+      }
+    } else {
+      const input = document.getElementById(field.questionId);
+      const value = input.value.trim();
+
+      field.validations.forEach(v => {
+        const key = Object.keys(v)[0];
+        const val = v[key];
+
+        if (key === "required" && val === "true" && !value) {
+          errorDiv.innerText = "This field is required.";
+          valid = false;
+        }
+        if (key === "maxlength" && value.length > parseInt(val)) {
+          errorDiv.innerText = `Cannot exceed ${val} characters.`;
+          valid = false;
+        }
+        if (key === "min" && value && parseInt(value) < parseInt(val)) {
+          errorDiv.innerText = `Minimum value is ${val}.`;
+          valid = false;
+        }
+        if (key === "max" && value && parseInt(value) > parseInt(val)) {
+          errorDiv.innerText = `Maximum value is ${val}.`;
+          valid = false;
+        }
+      });
+    }
+
+    return valid;
+  }
+
+  function disableToast() {
+    localStorage.setItem("disableToast", "true");
+  }
+
+  loadForm();
+</script>
+
+
+</body>
+</html>
+
+

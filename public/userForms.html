@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Forms</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+  
+    body {
+      margin: 0;
+      background-image: linear-gradient(89.4deg, rgba(194,0,39,1) 0.8%, rgba(10,35,104,1) 99.4%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+  
+  
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 40px;
+      box-shadow: 0 0px 10px rgba(255, 255, 255, 0.3); 
+    }
+  
+    .avatar {
+      width: 50px;
+      height: 50px;
+      background-color: #ffffff;
+      color: #333;
+      font-size: 22px;
+      font-weight: bold;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-transform: uppercase;
+      box-shadow: 0 2px 8px rgba(255, 255, 255, 0.4);
+      margin-right: auto; 
+    }
+  
+    .logout-btn {
+      background-color: #eb1000;
+      color: white;
+      padding: 10px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+  
+    .logout-btn:hover {
+      background-color: #d32f2f;
+    }
+  
+
+    #toast {
+      visibility: hidden;
+      min-width: 250px;
+      background-color: #4CAF50;
+      color: white;
+      text-align: center;
+      border-radius: 8px;
+      padding: 16px;
+      position: fixed;
+      z-index: 1;
+      right: 30px;
+      top: 20px;
+      font-size: 17px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+  
+    #toast.show {
+      visibility: visible;
+      animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    }
+  
+    @keyframes fadein {
+      from {
+        top: 0;
+        opacity: 0;
+      }
+      to {
+        top: 20px;
+        opacity: 1;
+      }
+    }
+  
+    @keyframes fadeout {
+      from {
+        top: 20px;
+        opacity: 1;
+      }
+      to {
+        top: 0;
+        opacity: 0;
+      }
+    }
+
+    .main-box {
+      flex: 1;
+      padding: 30px;
+      max-width: 1000px;
+      margin: auto;
+    }
+  
+    h2 {
+      text-align: center;
+      margin-bottom: 70px;
+      font-size: 40px;
+      color: #fff;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+  
+    .form-card {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 34px;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 20px;
+      font-weight: bold;
+      color: #fff;
+      cursor: pointer;
+      width: 1000px; 
+      max-width: 1200px; 
+      margin: 0 auto 30px auto
+      
+    }
+  
+    .form-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(255, 255, 255, 0.5);
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+  
+    .arrow {
+      font-size: 24px;
+    }
+  </style>
+</head>
+<body>
+
+
+<div id="toast">Welcome back!</div>
+
+
+<div class="header">
+  <div class="avatar" id="userAvatar">U</div>
+  <button class="logout-btn" onclick="logoutUser()">Logout</button>
+</div>
+
+
+<div class="main-box">
+  <h2 id="welcomeText">Welcome!</h2>
+  <div id="formList"></div>
+</div>
+
+<script>
+  async function loadForms() {
+    try {
+      const response = await fetch("/viewForms");
+      const forms = await response.json();
+
+      const formList = document.getElementById("formList");
+      formList.innerHTML = "";
+
+      forms.forEach((form, index) => {
+        const div = document.createElement("div");
+        div.className = "form-card";
+        div.innerHTML = `
+          <span>Form ${index + 1}: ${form.formName}</span> 
+          <span class="arrow">&#10132;</span>`;
+
+        div.onclick = () => {
+          window.location.href = `userFormFill.html?formId=${form._id}`;
+        };
+        formList.appendChild(div);
+      });
+    } catch (error) {
+      console.error("Error loading forms:", error);
+      document.getElementById("formList").innerHTML = "<p style='color:white;'>Failed to load forms. Please try again.</p>";
+    }
+  }
+
+  async function loadUsername() {
+  const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+
+  if (!loggedInUser || !loggedInUser.userId) {
+    document.getElementById("welcomeText").innerText = "Welcome, User!";
+    document.getElementById("userAvatar").innerText = "U";
+    return;
+  }
+
+  const userId = loggedInUser.userId; 
+  const username = loggedInUser.username; 
+
+  try {
+    const response = await fetch(`/getUser/${userId}`);
+    const userData = await response.json();
+    const firstName = userData.firstName || username || "User"; 
+
+    document.getElementById("welcomeText").innerText = `Welcome, ${firstName}!`;
+    document.getElementById("userAvatar").innerText = firstName.charAt(0).toUpperCase();
+
+    showToast(`Welcome back, ${firstName}!`);
+  } catch (error) {
+    console.error("Error loading user:", error);
+    document.getElementById("welcomeText").innerText = "Welcome, User!";
+    document.getElementById("userAvatar").innerText = "U";
+  }
+}
+
+
+  function logoutUser() {
+    localStorage.clear();
+    window.location.href = "/login.html";
+  }
+
+  function showToast(message) {
+  const toast = document.getElementById("toast");
+
+
+  const disableToast = localStorage.getItem("disableToast");
+
+
+  if (!disableToast) {
+    toast.innerText = message;
+    toast.className = "show";
+    setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+  }
+}
+
+
+  loadUsername();
+  loadForms();
+
+  
+</script>
+
+</body>
+</html>
+
